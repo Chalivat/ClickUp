@@ -4,7 +4,10 @@ using UnityEngine;
 
 public class Viseur : MonoBehaviour
 {
-    public float AimingSpeed;
+    public float AimingForce;
+    private Rigidbody rb;
+    public Transform Visor;
+    public Animator anim;
 
     void Aim()
     {
@@ -13,16 +16,23 @@ public class Viseur : MonoBehaviour
 
         Vector3 dir = new Vector3(x,y,0);
         
-        //dir = newRot.eulerAngles;
         print(dir);
         if (dir.magnitude >= .1f)
         {
-            transform.rotation = Quaternion.LookRotation(dir, -Vector3.forward) * Quaternion.FromToRotation(Vector3.up, Vector3.forward);
+            Visor.rotation = Quaternion.LookRotation(dir, -Vector3.forward) * Quaternion.FromToRotation(Vector3.up, Vector3.forward);
+            anim.SetFloat("Bend",(x+1)/2);
         }
     }
 
-    void Update()
+    void FixedUpdate()
     {
         Aim();
     }
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+
 }

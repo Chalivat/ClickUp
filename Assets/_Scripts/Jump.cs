@@ -14,12 +14,16 @@ public class Jump : MonoBehaviour
     private Rigidbody rb;
     public Transform GravityCenter;
     public Transform Bumper;
+    public Transform Up, Down;
+    public Transform Visor;
 
-    public Image chargeBar;
     void DoJump()
     {
-        //rb.AddForce(transform.up * clickIntensity,ForceMode.VelocityChange);
-        rb.velocity = transform.up * clickIntensity * jumpForce;
+        if (CheckGround())
+        {
+            rb.AddForce(Visor.up * clickIntensity * jumpForce,ForceMode.VelocityChange);
+            //rb.velocity = Visor.up * clickIntensity * jumpForce;
+        }
     }
 
     void ChargeJump()
@@ -27,21 +31,36 @@ public class Jump : MonoBehaviour
         if (Input.GetAxis("Jump") > .2f && clickIntensity <=1)
         {
             clickIntensity += Time.deltaTime * chargingSpeed;
-            clickIntensity = Mathf.Clamp01(clickIntensity);
-            UpdateBar(clickIntensity);
-            Bumper.localScale = new Vector3(1,Mathf.Lerp(1,0,clickIntensity),1);
+            clickIntensity = Mathf.Clamp(clickIntensity,0.1f,1);
+            Bumper.position = Vector3.Lerp(Down.position,Up.position,clickIntensity);
+            //Bumper.localScale = new Vector3(1,Mathf.Lerp(1,0,clickIntensity),1);
         }
         else if (clickIntensity >=.1f)
         {
             DoJump();
             clickIntensity = 0;
-
-            Bumper.localScale = new Vector3(1, 1, 1);
+            Bumper.position = Down.position;
+            //Bumper.localScale = new Vector3(1, 1, 1);
         }
+    }
+
+    bool CheckGround()
+    {
+        if (Physics.Raycast(Bumper.position,-transform.up,Bumper.localScale.y + 0.1f))
+        {
+            return true;
+        }
+        else
+        {
+            //transform.LookAt(rb.velocity);
+        }
+        return false;
     }
 
     void Update()
     {
+
+        Debug.DrawRay(Bumper.position, -transform.up * (Bumper.localScale.y - 0.1f));
         ChargeJump();
     }
 
@@ -50,10 +69,7 @@ public class Jump : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         Physics.gravity = Physics.gravity * 2;
         rb.centerOfMass = GravityCenter.localPosition;
+        Bumper.position = Vector3.Lerp(Down.position, Up.position, clickIntensity);
     }
-
-    void UpdateBar(float value)
-    {
-        chargeBar.fillAmount = value;
-    }
+    
 }
